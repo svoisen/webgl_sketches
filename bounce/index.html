@@ -1,39 +1,12 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Philo Ball</title>
-    <script type="text/javascript" src="PhiloGL.js"></script>
-    <script type="text/javascript" src="PhiloBall.js"></script>
-    <script id="shader-fs" type="x-shader/x-fragment">
-      #ifdef GL_ES
-      precision highp float;
-      #endif
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+  <script type="text/javascript" src="Three.js"></script>
+  <script type="text/javascript" src="Bounce.js"></script>
+	<title>Bounce</title>
+</head>
+<body onload="startBounce()">
 
-      varying vec4 vColor;
-
-      void main(void) {
-        gl_FragColor = vColor;
-      }
-    </script>
-
-    <script id="shader-vs" type="x-shader/x-vertex">
-      attribute vec3 aVertexPosition;
-      attribute vec4 aVertexColor;
-
-      uniform mat4 uMVMatrix;
-      uniform mat4 uPMatrix;
-
-      varying vec4 vColor;
-
-      void main(void) {
-        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
-        vColor = aVertexColor;
-      }
-    </script>
-  </head>
-
-  <body onload="start('canvas');">
-    <canvas id="canvas" width="800" height="600"></canvas>
-  </body>
+</body>
 </html>
-
