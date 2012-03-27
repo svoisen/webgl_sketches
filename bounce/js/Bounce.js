@@ -74,9 +74,10 @@
       leftWall.position.set(0, WIDTH / 2, 0);
       leftWall.receiveShadow = true;
       this.scene.add(leftWall);
-      backGeometry = new THREE.PlaneGeometry(WIDTH, WIDTH, 1, 1);
-      backMaterial = new THREE.MeshPhongMaterial({
-        color: 0xffffff
+      backGeometry = new THREE.PlaneGeometry(WIDTH, WIDTH, 16, 16);
+      backMaterial = new THREE.MeshBasicMaterial({
+        color: 0xd0d0d0,
+        wireframe: true
       });
       backWall = new THREE.Mesh(backGeometry, backMaterial);
       backWall.position.set(WIDTH / 2, WIDTH / 2, -WIDTH / 2);
