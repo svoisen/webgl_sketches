@@ -27,13 +27,15 @@
 
   this.GRAVITY = -0.5;
 
-  this.COLOR_POOL = [0x000000, 0xCC0000, 0x999999, 0xCCCCCC];
+  this.COLOR_POOL = [0x333333, 0x66CCFF, 0xCC0000, 0x66CC00, 0xFF6600];
 
   Invaders = (function() {
 
     Invaders.name = 'Invaders';
 
     function Invaders(container) {
+      this.cleanupHandler = __bind(this.cleanupHandler, this);
+
       this._keyDownHandler = __bind(this._keyDownHandler, this);
 
       this._animate = __bind(this._animate, this);
@@ -81,7 +83,11 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         invader = _ref[_i];
-        _results.push(invader.updateAnimation(timer));
+        if (invader != null) {
+          _results.push(invader.updateAnimation(timer));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     };
@@ -112,7 +118,7 @@
     Invaders.prototype._addRandomInvader = function() {
       var invader;
       this.invaders || (this.invaders = []);
-      invader = new Invader(Math.random() * 32768);
+      invader = new Invader(Math.random() * 32768, this.cleanupHandler);
       invader.position.set(0, 0, 0);
       this.scene.add(invader);
       return this.invaders.push(invader);
@@ -137,6 +143,18 @@
       }
     };
 
+    Invaders.prototype.cleanupHandler = function(invader) {
+      var i, _i, _ref;
+      for (i = _i = 0, _ref = this.invaders.length; 0 <= _ref ? _i <= _ref : _i >= _ref; i = 0 <= _ref ? ++_i : --_i) {
+        if (this.invaders[i] === invader) {
+          this.invaders.splice(i, 1);
+          this.scene.remove(invader);
+          console.log(this.invaders.length);
+          return;
+        }
+      }
+    };
+
     return Invaders;
 
   })();
@@ -147,17 +165,18 @@
 
     Invader.name = 'Invader';
 
-    function Invader(seed) {
+    function Invader(seed, cleanupCallback) {
       Invader.__super__.constructor.call(this);
       this.seed = seed;
+      this.cleanupCallback = cleanupCallback;
       this._init();
       return this;
     }
 
     Invader.prototype.updateAnimation = function(timer) {
-      var cube, _i, _len, _ref, _results;
+      var cleanup, cube, _i, _len, _ref;
+      cleanup = false;
       _ref = this.cubes;
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         cube = _ref[_i];
         cube.vy += cube.gravity;
@@ -166,9 +185,12 @@
         cube.position.y += cube.vy;
         cube.rotation.y += cube.rvy;
         cube.position.z += cube.vz;
-        _results.push(cube.rotation.z += cube.rvz);
+        cube.rotation.z += cube.rvz;
+        cleanup || (cleanup = cube.position.y < -6 * HEIGHT);
       }
-      return _results;
+      if (cleanup) {
+        return this._cleanupDestroy();
+      }
     };
 
     Invader.prototype.destroy = function() {
@@ -216,6 +238,13 @@
         }
       }
       return _results;
+    };
+
+    Invader.prototype._cleanupDestroy = function() {
+      this.cubes.length = 0;
+      if (this.cleanupCallback != null) {
+        return this.cleanupCallback(this);
+      }
     };
 
     Invader.prototype._addCube = function(cube) {

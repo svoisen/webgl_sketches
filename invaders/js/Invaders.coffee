@@ -9,7 +9,7 @@
 @INVADER_SIZE = 5
 @CUBE_SIZE = 20
 @GRAVITY = -0.5
-@COLOR_POOL = [0x000000, 0xCC0000, 0x999999, 0xCCCCCC]
+@COLOR_POOL = [0x333333, 0x66CCFF, 0xCC0000, 0x66CC00, 0xFF6600]
 
 class Invaders
   constructor: (container) ->
@@ -43,7 +43,8 @@ class Invaders
 
   _updateInvadersAnimations: (timer) ->
     return unless @invaders?
-    invader.updateAnimation(timer) for invader in @invaders
+    for invader in @invaders
+      invader.updateAnimation(timer) if invader?
 
   _createScene: ->
     @scene = new THREE.Scene()
@@ -68,7 +69,7 @@ class Invaders
 
   _addRandomInvader: ->
     @invaders ||= []
-    invader = new Invader(Math.random()*32768)
+    invader = new Invader(Math.random()*32768, @cleanupHandler)
     invader.position.set(0, 0, 0)
     @scene.add(invader)
     @invaders.push(invader)
@@ -81,15 +82,25 @@ class Invaders
   _keyDownHandler: (event) =>
     @_destroyInvaders() if event.keyCode == 32
 
+  cleanupHandler: (invader) =>
+    for i in [0..@invaders.length]
+      if @invaders[i] is invader
+        @invaders.splice(i, 1)
+        @scene.remove(invader)
+        return
+
 class Invader extends THREE.Object3D
-  constructor: (seed) ->
+  constructor: (seed, cleanupCallback) ->
     super()
     @seed = seed
+    @cleanupCallback = cleanupCallback
     @_init()
 
     return this
 
   updateAnimation: (timer) ->
+    cleanup = false
+
     for cube in @cubes
       cube.vy += cube.gravity
       cube.position.x += cube.vx
@@ -98,6 +109,9 @@ class Invader extends THREE.Object3D
       cube.rotation.y += cube.rvy
       cube.position.z += cube.vz
       cube.rotation.z += cube.rvz
+      cleanup ||= cube.position.y < -6*HEIGHT
+
+    @_cleanupDestroy() if cleanup
 
   destroy: ->
     for cube in @cubes
@@ -128,6 +142,10 @@ class Invader extends THREE.Object3D
         cube.vx = cube.vy = cube.vz = cube.rvx = cube.rvy = cube.rvz = 0
         cube.gravity = 0
         @_addCube(cube)
+
+  _cleanupDestroy: ->
+    @cubes.length = 0
+    @cleanupCallback(this) if @cleanupCallback?
 
   _addCube: (cube) ->
     @cubes ||= []
