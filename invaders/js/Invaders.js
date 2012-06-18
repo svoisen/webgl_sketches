@@ -9,7 +9,7 @@
 
   this.HEIGHT = 480;
 
-  this.BACKGROUND_COLOR = 0x0000000;
+  this.BACKGROUND_COLOR = 0xFFFFFF;
 
   this.VIEW_ANGLE = 45;
 
@@ -26,6 +26,8 @@
   this.CUBE_SIZE = 20;
 
   this.GRAVITY = -0.5;
+
+  this.COLOR_POOL = [0x000000, 0xCC0000, 0x999999, 0xCCCCCC];
 
   Invaders = (function() {
 
@@ -93,18 +95,18 @@
       this.camera.position.x = 0;
       this.camera.position.y = 0;
       this.camera.position.z = CAMERA_DISTANCE;
-      return this.scene.add(this.camera);
+      this.scene.add(this.camera);
+      return this.container.appendChild(this.renderer.domElement);
     };
 
     Invaders.prototype._addLights = function() {
-      var light3, light4;
-      light3 = new THREE.PointLight(0xffffff);
-      light3.position.set(WIDTH / 2, HEIGHT / 2, 400);
-      this.scene.add(light3);
-      light4 = new THREE.PointLight(0xffffff);
-      light4.position.set(-WIDTH / 2, HEIGHT / 2, -400);
-      this.scene.add(light4);
-      return this.container.appendChild(this.renderer.domElement);
+      var light1, light2;
+      light1 = new THREE.PointLight(0xffffff);
+      light1.position.set(WIDTH / 2, HEIGHT / 2, 400);
+      this.scene.add(light1);
+      light2 = new THREE.PointLight(0xffffff);
+      light2.position.set(-WIDTH / 2, HEIGHT / 2, -400);
+      return this.scene.add(light2);
     };
 
     Invaders.prototype._addRandomInvader = function() {
@@ -117,18 +119,16 @@
     };
 
     Invaders.prototype._destroyInvaders = function() {
-      var invader, _i, _len, _ref, _results;
+      var invader, _i, _len, _ref;
       if (this.invaders == null) {
         return;
       }
-      console.log(this.invaders.length);
       _ref = this.invaders;
-      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         invader = _ref[_i];
-        _results.push(invader.destroy());
+        invader.destroy();
       }
-      return _results;
+      return this._addRandomInvader();
     };
 
     Invaders.prototype._keyDownHandler = function(event) {
@@ -162,8 +162,11 @@
         cube = _ref[_i];
         cube.vy += cube.gravity;
         cube.position.x += cube.vx;
+        cube.rotation.x += cube.rvx;
         cube.position.y += cube.vy;
-        _results.push(cube.position.z += cube.vz);
+        cube.rotation.y += cube.rvy;
+        cube.position.z += cube.vz;
+        _results.push(cube.rotation.z += cube.rvz);
       }
       return _results;
     };
@@ -175,8 +178,11 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         cube = _ref[_i];
         cube.vx = Math.random() * 20 - 10;
+        cube.rvx = Math.random() * Math.PI;
         cube.vy = Math.random() * 20;
+        cube.rvy = Math.random() * Math.PI;
         cube.vz = Math.random() * 20 - 10;
+        cube.rvz = Math.random() * Math.PI;
         _results.push(cube.gravity = GRAVITY);
       }
       return _results;
@@ -202,7 +208,7 @@
           cube = this._generateCube(CUBE_SIZE);
           cube.position.x = (i % INVADER_SIZE) * CUBE_SIZE - offset;
           cube.position.y = row * CUBE_SIZE - offset;
-          cube.vx = cube.vy = cube.vz = 0;
+          cube.vx = cube.vy = cube.vz = cube.rvx = cube.rvy = cube.rvz = 0;
           cube.gravity = 0;
           _results.push(this._addCube(cube));
         } else {
@@ -245,7 +251,7 @@
 
     Invader.prototype._createMaterial = function() {
       return this.material = new THREE.MeshPhongMaterial({
-        color: 0xFF0000,
+        color: COLOR_POOL[Math.floor(Math.random() * COLOR_POOL.length)],
         shininess: 100.0,
         specular: 0xFFFFFF
       });

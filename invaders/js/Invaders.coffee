@@ -1,6 +1,6 @@
 @WIDTH = 640
 @HEIGHT = 480
-@BACKGROUND_COLOR = 0x0000000
+@BACKGROUND_COLOR = 0xFFFFFF
 @VIEW_ANGLE = 45
 @NEAR = 1
 @FAR = 10000
@@ -9,6 +9,7 @@
 @INVADER_SIZE = 5
 @CUBE_SIZE = 20
 @GRAVITY = -0.5
+@COLOR_POOL = [0x000000, 0xCC0000, 0x999999, 0xCCCCCC]
 
 class Invaders
   constructor: (container) ->
@@ -54,24 +55,16 @@ class Invaders
     @camera.position.y = 0
     @camera.position.z = CAMERA_DISTANCE
     @scene.add(@camera)
+    @container.appendChild(@renderer.domElement)
 
   _addLights: ->
-    # light1 = new THREE.DirectionalLight(0xffffff)
-    # light1.position.set(1, 1, 1).normalize()
-    # @scene.add(light1)
+    light1 = new THREE.PointLight(0xffffff)
+    light1.position.set(WIDTH/2, HEIGHT/2, 400)
+    @scene.add(light1)
 
-    # light2 = new THREE.DirectionalLight(0xffffff)
-    # light2.position.set(-1, -1, -1).normalize()
-    # @scene.add(light2)
-
-    light3 = new THREE.PointLight(0xffffff)
-    light3.position.set(WIDTH/2, HEIGHT/2, 400)
-    @scene.add(light3)
-
-    light4 = new THREE.PointLight(0xffffff)
-    light4.position.set(-WIDTH/2, HEIGHT/2, -400)
-    @scene.add(light4)
-    @container.appendChild(@renderer.domElement)
+    light2 = new THREE.PointLight(0xffffff)
+    light2.position.set(-WIDTH/2, HEIGHT/2, -400)
+    @scene.add(light2)
 
   _addRandomInvader: ->
     @invaders ||= []
@@ -82,8 +75,8 @@ class Invaders
 
   _destroyInvaders: ->
     return unless @invaders?
-    console.log @invaders.length
     invader.destroy() for invader in @invaders
+    @_addRandomInvader()
 
   _keyDownHandler: (event) =>
     @_destroyInvaders() if event.keyCode == 32
@@ -100,14 +93,20 @@ class Invader extends THREE.Object3D
     for cube in @cubes
       cube.vy += cube.gravity
       cube.position.x += cube.vx
+      cube.rotation.x += cube.rvx
       cube.position.y += cube.vy
+      cube.rotation.y += cube.rvy
       cube.position.z += cube.vz
+      cube.rotation.z += cube.rvz
 
   destroy: ->
     for cube in @cubes
       cube.vx = Math.random()*20 - 10
+      cube.rvx = Math.random()*Math.PI
       cube.vy = Math.random()*20
+      cube.rvy = Math.random()*Math.PI
       cube.vz = Math.random()*20 - 10
+      cube.rvz = Math.random()*Math.PI
       cube.gravity = GRAVITY
 
   _init: ->
@@ -126,7 +125,7 @@ class Invader extends THREE.Object3D
         cube = @_generateCube(CUBE_SIZE)
         cube.position.x = (i % INVADER_SIZE) * CUBE_SIZE - offset
         cube.position.y = row * CUBE_SIZE - offset
-        cube.vx = cube.vy = cube.vz = 0
+        cube.vx = cube.vy = cube.vz = cube.rvx = cube.rvy = cube.rvz = 0
         cube.gravity = 0
         @_addCube(cube)
 
@@ -161,7 +160,7 @@ class Invader extends THREE.Object3D
 
   _createMaterial: ->
     @material = new THREE.MeshPhongMaterial(
-      color: 0xFF0000
+      color: COLOR_POOL[Math.floor(Math.random()*COLOR_POOL.length)]
       shininess: 100.0
       specular: 0xFFFFFF
     )
