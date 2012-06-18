@@ -17,7 +17,7 @@
 
   this.FAR = 10000;
 
-  this.CAMERA_DISTANCE = 500;
+  this.CAMERA_DISTANCE = 300;
 
   this.ASPECT = this.WIDTH / this.HEIGHT;
 
@@ -42,31 +42,39 @@
     };
 
     Invaders.prototype._animate = function() {
+      var timer;
       requestAnimationFrame(this._animate);
+      timer = 0.001 * Date.now();
+      this.camera.position.x = Math.sin(timer) * CAMERA_DISTANCE;
+      this.camera.position.z = Math.cos(timer) * CAMERA_DISTANCE;
+      this.camera.lookAt(new THREE.Vector3(0, 0, 0));
       return this.renderer.render(this.scene, this.camera);
     };
 
     Invaders.prototype._createScene = function() {
-      var light1;
+      var light3, light4;
       this.scene = new THREE.Scene();
       this.renderer = new THREE.WebGLRenderer();
       this.renderer.setSize(WIDTH, HEIGHT);
       this.renderer.setClearColorHex(BACKGROUND_COLOR, 1.0);
       this.camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
-      this.camera.position.x = WIDTH / 2.0;
-      this.camera.position.y = HEIGHT / 2.0;
+      this.camera.position.x = 0;
+      this.camera.position.y = 0;
       this.camera.position.z = CAMERA_DISTANCE;
       this.scene.add(this.camera);
-      light1 = new THREE.DirectionalLight(0xffffff);
-      light1.position.set(0, 0, 1).normalize();
-      this.scene.add(light1);
+      light3 = new THREE.PointLight(0xffffff);
+      light3.position.set(WIDTH / 2, HEIGHT / 2, 400);
+      this.scene.add(light3);
+      light4 = new THREE.PointLight(0xffffff);
+      light4.position.set(-WIDTH / 2, HEIGHT / 2, -400);
+      this.scene.add(light4);
       return this.container.appendChild(this.renderer.domElement);
     };
 
     Invaders.prototype._addRandomInvader = function() {
       var invader;
       invader = new Invader(Math.random() * 32768);
-      invader.position.set(WIDTH / 2, HEIGHT / 2, 0);
+      invader.position.set(0, 0, 0);
       return this.scene.add(invader);
     };
 

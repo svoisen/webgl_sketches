@@ -4,7 +4,7 @@
 @VIEW_ANGLE = 45
 @NEAR = 1
 @FAR = 10000
-@CAMERA_DISTANCE = 500
+@CAMERA_DISTANCE = 300
 @ASPECT = @WIDTH/@HEIGHT
 @INVADER_SIZE = 5
 @CUBE_SIZE = 20
@@ -21,6 +21,10 @@ class Invaders
 
   _animate: =>
     requestAnimationFrame(@_animate)
+    timer = 0.001 * Date.now()
+    @camera.position.x = Math.sin(timer)*CAMERA_DISTANCE
+    @camera.position.z = Math.cos(timer)*CAMERA_DISTANCE
+    @camera.lookAt(new THREE.Vector3(0, 0, 0))
     @renderer.render(@scene, @camera)
 
   _createScene: ->
@@ -29,20 +33,31 @@ class Invaders
     @renderer.setSize(WIDTH, HEIGHT)
     @renderer.setClearColorHex(BACKGROUND_COLOR, 1.0)
     @camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR)
-    @camera.position.x = WIDTH/2.0
-    @camera.position.y = HEIGHT/2.0
+    @camera.position.x = 0
+    @camera.position.y = 0
     @camera.position.z = CAMERA_DISTANCE
     @scene.add(@camera)
 
-    light1 = new THREE.DirectionalLight(0xffffff)
-    light1.position.set(0, 0, 1).normalize()
-    @scene.add(light1)
+    # light1 = new THREE.DirectionalLight(0xffffff)
+    # light1.position.set(1, 1, 1).normalize()
+    # @scene.add(light1)
 
+    # light2 = new THREE.DirectionalLight(0xffffff)
+    # light2.position.set(-1, -1, -1).normalize()
+    # @scene.add(light2)
+
+    light3 = new THREE.PointLight(0xffffff)
+    light3.position.set(WIDTH/2, HEIGHT/2, 400)
+    @scene.add(light3)
+
+    light4 = new THREE.PointLight(0xffffff)
+    light4.position.set(-WIDTH/2, HEIGHT/2, -400)
+    @scene.add(light4)
     @container.appendChild(@renderer.domElement)
 
   _addRandomInvader: ->
     invader = new Invader(Math.random()*32768)
-    invader.position.set(WIDTH/2, HEIGHT/2, 0)
+    invader.position.set(0, 0, 0)
     @scene.add(invader)
 
 class Invader extends THREE.Object3D
