@@ -8,6 +8,7 @@
 @ASPECT = @WIDTH/@HEIGHT
 @INVADER_SIZE = 5
 @CUBE_SIZE = 20
+@GRAVITY = -0.5
 
 class Invaders
   constructor: (container) ->
@@ -15,17 +16,33 @@ class Invaders
     @_init()
     @_animate()
 
+    return this
+
   _init: ->
     @_createScene()
+    @_addLights()
     @_addRandomInvader()
+    @_setupEvents()
+
+  _setupEvents: ->
+    window.addEventListener("keydown", @_keyDownHandler)
 
   _animate: =>
     requestAnimationFrame(@_animate)
     timer = 0.001 * Date.now()
+    @_updateCameraAnimation(timer)
+    @_updateInvadersAnimations(timer)
+
+  _updateCameraAnimation: (timer) ->
+    return unless @camera?
     @camera.position.x = Math.sin(timer)*CAMERA_DISTANCE
     @camera.position.z = Math.cos(timer)*CAMERA_DISTANCE
     @camera.lookAt(new THREE.Vector3(0, 0, 0))
     @renderer.render(@scene, @camera)
+
+  _updateInvadersAnimations: (timer) ->
+    return unless @invaders?
+    invader.updateAnimation(timer) for invader in @invaders
 
   _createScene: ->
     @scene = new THREE.Scene()
@@ -38,6 +55,7 @@ class Invaders
     @camera.position.z = CAMERA_DISTANCE
     @scene.add(@camera)
 
+  _addLights: ->
     # light1 = new THREE.DirectionalLight(0xffffff)
     # light1.position.set(1, 1, 1).normalize()
     # @scene.add(light1)
@@ -56,16 +74,41 @@ class Invaders
     @container.appendChild(@renderer.domElement)
 
   _addRandomInvader: ->
+    @invaders ||= []
     invader = new Invader(Math.random()*32768)
     invader.position.set(0, 0, 0)
     @scene.add(invader)
+    @invaders.push(invader)
+
+  _destroyInvaders: ->
+    return unless @invaders?
+    console.log @invaders.length
+    invader.destroy() for invader in @invaders
+
+  _keyDownHandler: (event) =>
+    @_destroyInvaders() if event.keyCode == 32
 
 class Invader extends THREE.Object3D
   constructor: (seed) ->
     super()
-
     @seed = seed
     @_init()
+
+    return this
+
+  updateAnimation: (timer) ->
+    for cube in @cubes
+      cube.vy += cube.gravity
+      cube.position.x += cube.vx
+      cube.position.y += cube.vy
+      cube.position.z += cube.vz
+
+  destroy: ->
+    for cube in @cubes
+      cube.vx = Math.random()*20 - 10
+      cube.vy = Math.random()*20
+      cube.vz = Math.random()*20 - 10
+      cube.gravity = GRAVITY
 
   _init: ->
     @_createMaterial()
@@ -83,6 +126,8 @@ class Invader extends THREE.Object3D
         cube = @_generateCube(CUBE_SIZE)
         cube.position.x = (i % INVADER_SIZE) * CUBE_SIZE - offset
         cube.position.y = row * CUBE_SIZE - offset
+        cube.vx = cube.vy = cube.vz = 0
+        cube.gravity = 0
         @_addCube(cube)
 
   _addCube: (cube) ->

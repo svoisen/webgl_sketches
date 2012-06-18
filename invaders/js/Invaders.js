@@ -25,34 +25,66 @@
 
   this.CUBE_SIZE = 20;
 
+  this.GRAVITY = -0.5;
+
   Invaders = (function() {
 
     Invaders.name = 'Invaders';
 
     function Invaders(container) {
+      this._keyDownHandler = __bind(this._keyDownHandler, this);
+
       this._animate = __bind(this._animate, this);
       this.container = container;
       this._init();
       this._animate();
+      return this;
     }
 
     Invaders.prototype._init = function() {
       this._createScene();
-      return this._addRandomInvader();
+      this._addLights();
+      this._addRandomInvader();
+      return this._setupEvents();
+    };
+
+    Invaders.prototype._setupEvents = function() {
+      return window.addEventListener("keydown", this._keyDownHandler);
     };
 
     Invaders.prototype._animate = function() {
       var timer;
       requestAnimationFrame(this._animate);
       timer = 0.001 * Date.now();
+      this._updateCameraAnimation(timer);
+      return this._updateInvadersAnimations(timer);
+    };
+
+    Invaders.prototype._updateCameraAnimation = function(timer) {
+      if (this.camera == null) {
+        return;
+      }
       this.camera.position.x = Math.sin(timer) * CAMERA_DISTANCE;
       this.camera.position.z = Math.cos(timer) * CAMERA_DISTANCE;
       this.camera.lookAt(new THREE.Vector3(0, 0, 0));
       return this.renderer.render(this.scene, this.camera);
     };
 
+    Invaders.prototype._updateInvadersAnimations = function(timer) {
+      var invader, _i, _len, _ref, _results;
+      if (this.invaders == null) {
+        return;
+      }
+      _ref = this.invaders;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        invader = _ref[_i];
+        _results.push(invader.updateAnimation(timer));
+      }
+      return _results;
+    };
+
     Invaders.prototype._createScene = function() {
-      var light3, light4;
       this.scene = new THREE.Scene();
       this.renderer = new THREE.WebGLRenderer();
       this.renderer.setSize(WIDTH, HEIGHT);
@@ -61,7 +93,11 @@
       this.camera.position.x = 0;
       this.camera.position.y = 0;
       this.camera.position.z = CAMERA_DISTANCE;
-      this.scene.add(this.camera);
+      return this.scene.add(this.camera);
+    };
+
+    Invaders.prototype._addLights = function() {
+      var light3, light4;
       light3 = new THREE.PointLight(0xffffff);
       light3.position.set(WIDTH / 2, HEIGHT / 2, 400);
       this.scene.add(light3);
@@ -73,9 +109,32 @@
 
     Invaders.prototype._addRandomInvader = function() {
       var invader;
+      this.invaders || (this.invaders = []);
       invader = new Invader(Math.random() * 32768);
       invader.position.set(0, 0, 0);
-      return this.scene.add(invader);
+      this.scene.add(invader);
+      return this.invaders.push(invader);
+    };
+
+    Invaders.prototype._destroyInvaders = function() {
+      var invader, _i, _len, _ref, _results;
+      if (this.invaders == null) {
+        return;
+      }
+      console.log(this.invaders.length);
+      _ref = this.invaders;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        invader = _ref[_i];
+        _results.push(invader.destroy());
+      }
+      return _results;
+    };
+
+    Invaders.prototype._keyDownHandler = function(event) {
+      if (event.keyCode === 32) {
+        return this._destroyInvaders();
+      }
     };
 
     return Invaders;
@@ -92,7 +151,36 @@
       Invader.__super__.constructor.call(this);
       this.seed = seed;
       this._init();
+      return this;
     }
+
+    Invader.prototype.updateAnimation = function(timer) {
+      var cube, _i, _len, _ref, _results;
+      _ref = this.cubes;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        cube = _ref[_i];
+        cube.vy += cube.gravity;
+        cube.position.x += cube.vx;
+        cube.position.y += cube.vy;
+        _results.push(cube.position.z += cube.vz);
+      }
+      return _results;
+    };
+
+    Invader.prototype.destroy = function() {
+      var cube, _i, _len, _ref, _results;
+      _ref = this.cubes;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        cube = _ref[_i];
+        cube.vx = Math.random() * 20 - 10;
+        cube.vy = Math.random() * 20;
+        cube.vz = Math.random() * 20 - 10;
+        _results.push(cube.gravity = GRAVITY);
+      }
+      return _results;
+    };
 
     Invader.prototype._init = function() {
       this._createMaterial();
@@ -114,6 +202,8 @@
           cube = this._generateCube(CUBE_SIZE);
           cube.position.x = (i % INVADER_SIZE) * CUBE_SIZE - offset;
           cube.position.y = row * CUBE_SIZE - offset;
+          cube.vx = cube.vy = cube.vz = 0;
+          cube.gravity = 0;
           _results.push(this._addCube(cube));
         } else {
           _results.push(void 0);
