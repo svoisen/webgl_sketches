@@ -92,10 +92,11 @@
     };
 
     Invader.prototype._build = function() {
-      var configuration, cube, i, row, totalCubes, _i, _results;
+      var configuration, cube, i, offset, row, totalCubes, _i, _results;
       configuration = this._generateConfiguration(this.seed);
       totalCubes = configuration.length;
       row = 0;
+      offset = INVADER_SIZE * CUBE_SIZE * 0.5;
       _results = [];
       for (i = _i = 0; 0 <= totalCubes ? _i <= totalCubes : _i >= totalCubes; i = 0 <= totalCubes ? ++_i : --_i) {
         if (i % INVADER_SIZE === 0 && i > 0) {
@@ -103,8 +104,8 @@
         }
         if (configuration[i] === "1") {
           cube = this._generateCube(CUBE_SIZE);
-          cube.position.x = (i % INVADER_SIZE) * CUBE_SIZE;
-          cube.position.y = row * CUBE_SIZE;
+          cube.position.x = (i % INVADER_SIZE) * CUBE_SIZE - offset;
+          cube.position.y = row * CUBE_SIZE - offset;
           _results.push(this._addCube(cube));
         } else {
           _results.push(void 0);

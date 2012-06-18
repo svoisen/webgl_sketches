@@ -60,13 +60,14 @@ class Invader extends THREE.Object3D
     configuration = @_generateConfiguration(@seed)
     totalCubes = configuration.length
     row = 0
+    offset = INVADER_SIZE * CUBE_SIZE * 0.5
 
     for i in [0..totalCubes]
       row++ if i % INVADER_SIZE == 0 and i > 0
       if configuration[i] == "1"
         cube = @_generateCube(CUBE_SIZE)
-        cube.position.x = (i % INVADER_SIZE) * CUBE_SIZE
-        cube.position.y = row * CUBE_SIZE
+        cube.position.x = (i % INVADER_SIZE) * CUBE_SIZE - offset
+        cube.position.y = row * CUBE_SIZE - offset
         @_addCube(cube)
 
   _addCube: (cube) ->
