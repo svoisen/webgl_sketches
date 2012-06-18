@@ -1,5 +1,5 @@
 @BACKGROUND_COLOR = 0x000000
-@WIDTH = 640
+@WIDTH = 620
 @HEIGHT = 480
 @VIEW_ANGLE = 45
 @NEAR = 1
@@ -93,7 +93,9 @@ class ThreeDCellularAutomata
     cube.position.set(i*10, j*10, 0)
     @scene.add(cube)
 
-@start3DCA = ->
-  container = document.createElement('div')
-  document.body.appendChild(container)
+@start3DCA = (container) ->
+  unless container?
+    container = document.createElement('div')
+    document.body.appendChild(container)
+
   new ThreeDCellularAutomata(container, WOLFRAM_NUMBER, GRID_SIZE)

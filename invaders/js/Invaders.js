@@ -5,7 +5,7 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-  this.WIDTH = 640;
+  this.WIDTH = 620;
 
   this.HEIGHT = 480;
 
@@ -149,7 +149,6 @@
         if (this.invaders[i] === invader) {
           this.invaders.splice(i, 1);
           this.scene.remove(invader);
-          console.log(this.invaders.length);
           return;
         }
       }
@@ -313,10 +312,11 @@
 
   })();
 
-  this.startInvaders = function() {
-    var container;
-    container = document.createElement('div');
-    document.body.appendChild(container);
+  this.startInvaders = function(container) {
+    if (container == null) {
+      container = document.createElement('div');
+      document.body.appendChild(container);
+    }
     return new Invaders(container);
   };
 

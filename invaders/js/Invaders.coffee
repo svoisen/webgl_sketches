@@ -1,4 +1,4 @@
-@WIDTH = 640
+@WIDTH = 620
 @HEIGHT = 480
 @BACKGROUND_COLOR = 0xFFFFFF
 @VIEW_ANGLE = 45
@@ -195,7 +195,9 @@ class Util
     
     return out
 
-@startInvaders = ->
-  container = document.createElement('div')
-  document.body.appendChild(container)
+@startInvaders = (container) ->
+  unless container?
+    container = document.createElement('div')
+    document.body.appendChild(container)
+
   new Invaders(container)
